@@ -16,7 +16,7 @@
 
 A proof-of-concept platform inspired by modern SOX testing workflows.
 
-Instead of allowing an LLM to perform financial calculations directly, this system uses deterministic validation engines to perform all financial checks and AI agents only for interpretation and audit reporting.
+Instead of allowing an LLM to perform financial calculations directly, this system uses deterministic validation engines to perform all financial checks while AI agents focus exclusively on interpretation and audit reporting.
 
 </div>
 
@@ -47,14 +47,28 @@ Structured Audit Report
 
 ---
 
+# 📊 Current Status
+
+| Component                 | Status      |
+| ------------------------- | ----------- |
+| Invoice Verification      | ✅ Complete  |
+| GST Validation            | ✅ Complete  |
+| Vendor Compliance         | ✅ Complete  |
+| Purchase Order Validation | ✅ Complete  |
+| Automated Testing         | ✅ Complete  |
+| Workflow Export           | ✅ Available |
+| GitHub Repository         | ✅ Live      |
+
+---
+
 # ⚡ Current Capabilities
 
-| Agent | Purpose |
-|---------|----------|
-| 📄 Invoice Verification | Validate invoice calculations |
-| 🧾 GST Validator | Verify GST rates and amounts |
-| 🏢 Vendor Compliance | Check vendor information completeness |
-| 📦 Purchase Order Validator | Validate PO controls and limits |
+| Agent                       | Purpose                               |
+| --------------------------- | ------------------------------------- |
+| 📄 Invoice Verification     | Validate invoice calculations         |
+| 🧾 GST Validator            | Verify GST rates and amounts          |
+| 🏢 Vendor Compliance        | Check vendor information completeness |
+| 📦 Purchase Order Validator | Validate PO controls and limits       |
 
 ---
 
@@ -89,18 +103,28 @@ Agent Router
 
 ---
 
+# 📸 Workflow Overview
+
+> Add your workflow screenshot here
+
+```text
+assets/workflow-screenshot.png
+```
+
+---
+
 # 🧠 Core Design Principle
 
 > The AI never performs financial calculations.
 
-All calculations, comparisons, validations and business rules are executed through deterministic JavaScript logic.
+All calculations, comparisons, validations, and business rules are executed through deterministic JavaScript logic.
 
 The AI is responsible only for:
 
-- Understanding context
-- Interpreting validation results
-- Generating audit reports
-- Providing recommendations
+* Understanding context
+* Interpreting validation results
+* Generating audit reports
+* Providing recommendations
 
 This approach improves:
 
@@ -175,13 +199,39 @@ node parallel-test.js
 
 ---
 
+# 📥 Workflow Import
+
+The complete n8n workflow is included in:
+
+```text
+workflows/finance-ai-router-v1.json
+```
+
+Import Steps:
+
+1. Open n8n
+2. Click Import Workflow
+3. Select finance-ai-router-v1.json
+4. Configure Ollama
+5. Configure Agent Prompt Files
+6. Execute Test Suite
+
+---
+
 # 📂 Repository Structure
 
 ```text
 finance-ai-audit-platform/
 │
 ├── agents/
-├── documents/
+│   ├── invoice-verifier.md
+│   ├── gst-validator.md
+│   ├── vendor-compliance.md
+│   └── purchase-order-validator.md
+│
+├── workflows/
+│   └── finance-ai-router-v1.json
+│
 ├── tests/
 │
 ├── test-runner.js
@@ -228,33 +278,42 @@ Stop platform:
 
 ### Platform
 
-- [ ] Dynamic Agent Registry
-- [ ] Agent Management Dashboard
-- [ ] Audit Trail & Execution History
-- [ ] PDF Report Generation
+* [ ] Dynamic Agent Registry
+* [ ] Agent Management Dashboard
+* [ ] Audit Trail & Execution History
+* [ ] Prompt Versioning System
+* [ ] PDF Report Generation
 
 ### AI
 
-- [ ] Human-in-the-Loop Reviews
-- [ ] Risk Scoring Engine
-- [ ] Multi-Agent Collaboration
+* [ ] Human-in-the-Loop Reviews
+* [ ] Risk Scoring Engine
+* [ ] Multi-Agent Collaboration
 
 ### Compliance
 
-- [ ] Additional SOX Control Modules
-- [ ] Evidence Collection Framework
-- [ ] Automated Control Testing
+* [ ] Additional SOX Control Modules
+* [ ] Evidence Collection Framework
+* [ ] Automated Control Testing
+
+---
+
+# 💡 Why This Project Exists
+
+This project started as a learning exercise inspired by modern discussions around AI-assisted SOX testing and audit automation.
+
+The objective was never to replace auditors.
+
+Instead, the goal was to explore how AI can support structured compliance workflows while keeping validation deterministic, explainable, and auditable.
+
+Building this platform also gave me an opportunity to reconnect with hands-on software development while exploring the intersection of AI, automation, audit, and business processes.
 
 ---
 
 # 📚 Inspiration
 
-This project was inspired by concepts explored in:
-
-**The Audit Leader's Guide to AI for SOX Testing**  
+**The Audit Leader's Guide to AI for SOX Testing**
 by Alexey Zanin
-
-The goal is not to replace auditors, but to explore how AI can assist audit and compliance workflows while maintaining control, transparency, and accountability.
 
 ---
 
