@@ -1,0 +1,17 @@
+{
+  "name": "Invoice PASS",
+  "payload": {
+    "agent": "invoice-verifier",
+    "payload": {
+      "invoice_number": "INV-001",
+      "items": [
+        { "description": "Consulting", "amount": 50000 },
+        { "description": "Software License", "amount": 20000 }
+      ],
+      "subtotal": 70000,
+      "gst": 12600,
+      "grand_total": 82600
+    }
+  },
+  "expected": ["Overall Status", "PASS"]
+}

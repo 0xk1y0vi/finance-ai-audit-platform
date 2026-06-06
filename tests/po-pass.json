@@ -1,0 +1,12 @@
+{
+  "name": "PO PASS",
+  "payload": {
+    "agent": "purchase-order-validator",
+    "payload": {
+      "po_number": "PO-001",
+      "po_amount": 100000,
+      "invoice_amount": 85000
+    }
+  },
+  "expected": ["Overall Status", "PASS"]
+}

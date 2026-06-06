@@ -1,0 +1,14 @@
+{
+  "name": "GST PASS",
+  "payload": {
+    "agent": "gst-validator",
+    "payload": {
+      "invoice_number": "GST-001",
+      "subtotal": 70000,
+      "gst_rate": 18,
+      "gst_amount": 12600,
+      "gstin": "29ABCDE1234F1Z5"
+    }
+  },
+  "expected": ["Overall Status", "PASS"]
+}

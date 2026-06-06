@@ -1,0 +1,13 @@
+{
+  "name": "Vendor PASS",
+  "payload": {
+    "agent": "vendor-compliance",
+    "payload": {
+      "vendor_name": "ABC Technologies",
+      "gstin": "29ABCDE1234F1Z5",
+      "pan": "ABCDE1234F",
+      "bank_account": "1234567890"
+    }
+  },
+  "expected": ["Overall Status", "PASS"]
+}

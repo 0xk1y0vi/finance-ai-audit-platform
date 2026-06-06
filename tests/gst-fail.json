@@ -1,0 +1,14 @@
+{
+  "name": "GST FAIL",
+  "payload": {
+    "agent": "gst-validator",
+    "payload": {
+      "invoice_number": "GST-FAIL-001",
+      "subtotal": 70000,
+      "gst_rate": 5,
+      "gst_amount": 5000,
+      "gstin": ""
+    }
+  },
+  "expected": ["Overall Status", "FAIL"]
+}
