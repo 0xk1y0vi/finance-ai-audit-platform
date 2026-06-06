@@ -1,0 +1,604 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "finance-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "86c46eae-563a-48cb-9089-79149adc8dc3",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        304
+      ],
+      "webhookId": "01d96279-5b89-49ff-8a27-2a354a6caf89"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Validation Results:\n\n{{ JSON.stringify($json.validationData, null, 2) }}",
+        "options": {
+          "systemMessage": "={{ $json.data }}"
+        }
+      },
+      "id": "b865478c-efc4-4ccf-a65c-cf633936453f",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:3b",
+        "options": {}
+      },
+      "id": "2297cc8e-9eb4-4913-8a3a-5eae55fced89",
+      "name": "Ollama Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        400
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "3xbwG6gy7ZJSUXsD",
+          "name": "Ollama account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "a3a655e5-6f41-4a1e-9918-a847074f3a25",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    agent: body.agent,\n    payload: body.payload\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        304
+      ],
+      "id": "763c1637-b195-414d-b2e9-04a5c45c6962",
+      "name": "Clean Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.agent }}",
+                    "rightValue": "invoice-verifier",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "397cc071-1060-4fcf-bf97-49f2408989a1"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "68eae838-367e-4695-9339-379d0f0e7f29",
+                    "leftValue": "={{ $json.agent }}",
+                    "rightValue": "gst-validator",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7fbb83e4-0b89-4d5a-b355-da0d2603f6e8",
+                    "leftValue": "={{ $json.agent }}",
+                    "rightValue": "vendor-compliance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bc1e2d17-9736-491b-9e5e-0f24a6b5839a",
+                    "leftValue": "={{ $json.agent }}",
+                    "rightValue": "purchase-order-validator",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        128
+      ],
+      "id": "c7603a77-321b-41cc-aa9c-11c82c6c1ea1",
+      "name": "Agent-Switch"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const payload = $json.payload || {};\n\nconst items = payload.items || [];\n\nconst expectedSubtotal = items.reduce(\n  (sum, item) => sum + Number(item.amount || 0),\n  0\n);\n\nconst expectedGST = Math.round(expectedSubtotal * 0.18);\n\nconst expectedGrandTotal = expectedSubtotal + expectedGST;\n\nconst providedSubtotal = Number(payload.subtotal || 0);\nconst providedGST = Number(payload.gst || 0);\nconst providedGrandTotal = Number(payload.grand_total || 0);\n\nconst subtotalMatch = expectedSubtotal === providedSubtotal;\nconst gstMatch = expectedGST === providedGST;\nconst grandTotalMatch = expectedGrandTotal === providedGrandTotal;\n\nconst validationPassed =\n  subtotalMatch &&\n  gstMatch &&\n  grandTotalMatch;\n\nconst failedChecks = [\n  !subtotalMatch,\n  !gstMatch,\n  !grandTotalMatch\n].filter(Boolean).length;\n\nconst riskAssessment =\n  failedChecks === 0\n    ? \"LOW\"\n    : failedChecks === 1\n      ? \"MEDIUM\"\n      : \"HIGH\";\n\nreturn {\n  json: {\n    agent: $json.agent,\n    data: $json.data,\n\n    validationPassed,\n\n    validationData: {\n      invoice_number: payload.invoice_number,\n\n      subtotalMatch,\n      gstMatch,\n      grandTotalMatch,\n\n      expectedSubtotal,\n      providedSubtotal,\n\n      expectedGST,\n      providedGST,\n\n      expectedGrandTotal,\n      providedGrandTotal,\n\n      failedChecks,\n      riskAssessment\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        -96
+      ],
+      "id": "5eb04383-8040-4d2d-a879-57c481723ef7",
+      "name": "Calculation-Logic(Invoice-Verifier)"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const payload = $json.payload || {};\n\nconst subtotal = Number(payload.subtotal || 0);\n\nconst expectedGST = Math.round(subtotal * 0.18);\n\nconst providedGST = Number(payload.gst_amount || 0);\n\nconst gstRateMatch =\n  Number(payload.gst_rate || 0) === 18;\n\nconst gstAmountMatch =\n  providedGST === expectedGST;\n\nconst gstinPresent =\n  Boolean(payload.gstin);\n\nconst validationPassed =\n  gstRateMatch &&\n  gstAmountMatch &&\n  gstinPresent;\n\nconst failedChecks = [\n  !gstRateMatch,\n  !gstAmountMatch,\n  !gstinPresent\n].filter(Boolean).length;\n\nconst riskAssessment =\n  failedChecks === 0\n    ? \"LOW\"\n    : failedChecks === 1\n      ? \"MEDIUM\"\n      : \"HIGH\";\n\nreturn {\n  json: {\n    agent: $json.agent,\n    data: $json.data,\n\n    validationPassed,\n\n    validationData: {\n      invoice_number: payload.invoice_number,\n\n      gstRateMatch,\n      gstAmountMatch,\n      gstinPresent,\n\n      expectedGST,\n      providedGST,\n\n      failedChecks,\n      riskAssessment\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        64
+      ],
+      "id": "3630de61-8338-4d73-a8ce-563cea6ba17f",
+      "name": "Calculation-Logic(GST-Validator)"
+    },
+    {
+      "parameters": {
+        "content": "This path is used to extract the .md file that gives instructions for the Agent's Task.",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -144
+      ],
+      "id": "40560640-f070-44d3-b903-ea65ceb4928a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "This path formats the data by cleaning that is going into the pipeline.",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        448
+      ],
+      "id": "ce74f3bc-96fe-4523-85b5-772ad3e87d1c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Second Stage of the pipeline combines instruction and  the payload that will later on be used for validation and feeding the data to AI.",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        624,
+        -144
+      ],
+      "id": "b4de62ca-4f7c-4252-93bc-50cda71a72b5",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Stage 1",
+        "height": 752,
+        "width": 816,
+        "color": "#876F8B"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -144
+      ],
+      "id": "f8b32b7e-c053-4383-87ca-b9c65d419e77",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Stage 2",
+        "height": 752,
+        "width": 816,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -144
+      ],
+      "id": "cc4cf886-eae7-43a6-bd40-588205fc3eef",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "Stage 3",
+        "height": 752,
+        "width": 816,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        -144
+      ],
+      "id": "ed7ff329-c676-4d87-b368-1c6e1ad3c252",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "Third stage has a manual logic that will verify the accuracy of the financial reports.",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        448
+      ],
+      "id": "af299e44-38d1-44d7-aa5c-256ded1da5b5",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        576,
+        160
+      ],
+      "id": "b24e7cff-e16a-4cc2-911b-f911e70969ea",
+      "name": "Merge( AI's Instruction & Cleaned request data )"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ '/home/node/.n8n-files/agents/' + $json.body.agent + '.md' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        32
+      ],
+      "id": "90fae393-a728-41d5-97f8-32b911d5d6e4",
+      "name": "Read/Write Files from Disk( AI's Instruction retrival )"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        32
+      ],
+      "id": "2ef1b9fb-f323-4a23-abc2-4bd83740e2b2",
+      "name": "Extract from File( Retrive data from binary file )"
+    },
+    {
+      "parameters": {
+        "content": "Stage 4",
+        "height": 752,
+        "width": 816,
+        "color": "#234913"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        -144
+      ],
+      "id": "f20a60d0-8092-48df-86cd-d54d72947f94",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "This is the final stage that accepts the information, feed it to AI, generates the conclusion and responds.",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2544,
+        -144
+      ],
+      "id": "6dd06cbd-3d20-423a-a4b2-513f28baa1b8",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "This is the first stage of the pipeline that accepts the requests and processes it.",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -48
+      ],
+      "id": "2b0c83ab-4513-44b2-bae5-ab3a2abcbb81",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const payload = $json.payload || {};\n\nconst vendorNamePresent = Boolean(payload.vendor_name);\nconst gstinPresent = Boolean(payload.gstin);\nconst panPresent = Boolean(payload.pan);\nconst bankPresent = Boolean(payload.bank_account);\n\nconst validationPassed =\n  vendorNamePresent &&\n  gstinPresent &&\n  panPresent &&\n  bankPresent;\n\nconst failedChecks = [\n  !vendorNamePresent,\n  !gstinPresent,\n  !panPresent,\n  !bankPresent\n].filter(Boolean).length;\n\nconst riskAssessment =\n  failedChecks === 0\n    ? \"LOW\"\n    : failedChecks === 1\n      ? \"MEDIUM\"\n      : \"HIGH\";\n\nreturn {\n  json: {\n    agent: $json.agent,\n    data: $json.data,\n\n    validationPassed,\n\n    validationData: {\n      vendor_name: payload.vendor_name,\n\n      vendorNamePresent,\n      gstinPresent,\n      panPresent,\n      bankPresent,\n\n      failedChecks,\n      riskAssessment\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        224
+      ],
+      "id": "a7e588e6-5e32-4352-bb2e-dacd9ff5f246",
+      "name": "Calculation-Logic( Vendor-Compliance )"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const payload = $json.payload || {};\n\nconst poNumberPresent = Boolean(payload.po_number);\n\nconst poAmount = Number(payload.po_amount || 0);\nconst invoiceAmount = Number(payload.invoice_amount || 0);\n\nconst poAmountPresent = poAmount > 0;\nconst invoiceAmountPresent = invoiceAmount > 0;\n\nconst invoiceWithinLimit =\n  invoiceAmount <= poAmount;\n\nconst validationPassed =\n  poNumberPresent &&\n  poAmountPresent &&\n  invoiceAmountPresent &&\n  invoiceWithinLimit;\n\nconst failedChecks = [\n  !poNumberPresent,\n  !poAmountPresent,\n  !invoiceAmountPresent,\n  !invoiceWithinLimit\n].filter(Boolean).length;\n\nconst riskAssessment =\n  failedChecks === 0\n    ? \"LOW\"\n    : failedChecks === 1\n      ? \"MEDIUM\"\n      : \"HIGH\";\n\nreturn {\n  json: {\n    agent: $json.agent,\n    data: $json.data,\n\n    validationPassed,\n\n    validationData: {\n      po_number: payload.po_number,\n\n      poNumberPresent,\n      poAmountPresent,\n      invoiceAmountPresent,\n      invoiceWithinLimit,\n\n      po_amount: poAmount,\n      invoice_amount: invoiceAmount,\n\n      failedChecks,\n      riskAssessment\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        400
+      ],
+      "id": "d852f319-5847-4624-b31b-2c7e43349ee1",
+      "name": "Calculation-Logic( Purchase-Order-Validator )"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Clean Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read/Write Files from Disk( AI's Instruction retrival )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Request": {
+      "main": [
+        [
+          {
+            "node": "Merge( AI's Instruction & Cleaned request data )",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Agent-Switch": {
+      "main": [
+        [
+          {
+            "node": "Calculation-Logic(Invoice-Verifier)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculation-Logic(GST-Validator)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculation-Logic( Vendor-Compliance )",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculation-Logic( Purchase-Order-Validator )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculation-Logic(Invoice-Verifier)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculation-Logic(GST-Validator)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge( AI's Instruction & Cleaned request data )": {
+      "main": [
+        [
+          {
+            "node": "Agent-Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk( AI's Instruction retrival )": {
+      "main": [
+        [
+          {
+            "node": "Extract from File( Retrive data from binary file )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File( Retrive data from binary file )": {
+      "main": [
+        [
+          {
+            "node": "Merge( AI's Instruction & Cleaned request data )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculation-Logic( Vendor-Compliance )": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculation-Logic( Purchase-Order-Validator )": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e2a99b8340bdcd9336028d6e2f0b571c98bce934c39dd2c7b51124f4e6013f1"
+  }
+}
