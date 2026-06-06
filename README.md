@@ -101,15 +101,7 @@ Agent Router
      Audit Report Output
 ```
 
----
 
-# 📸 Workflow Overview
-
-> Add your workflow screenshot here
-
-```text
-assets/workflow-screenshot.png
-```
 
 ---
 
